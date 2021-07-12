@@ -29,15 +29,15 @@ func Controller(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
 }
 
 func (h controller) SignUp(c *fiber.Ctx) {
-	user := new(User)
-	if err := c.BodyParser(user); err != nil {
+	var user User
+	if err := c.BodyParser(&user); err != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 		return
 	}
 
-	errors := rest.ValidateStruct(*user)
+	errors := rest.ValidateStruct(user)
 	if errors != nil {
 		c.Status(fiber.StatusBadRequest).JSON(errors)
 		return
@@ -96,13 +96,14 @@ func (h controller) GetAccounts(c *fiber.Ctx) {
 }
 
 func (h controller) DeleteAccount(c *fiber.Ctx) {
-	userId := c.Params("id")
-
-	res := h.DB.Delete(&User{}, userId)
-
-	if res.Error != nil {
+	if res := h.DB.Delete(&User{}, c.Params("id")); res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
+		})
+		return
+	} else if res.RowsAffected == 0 {
+		c.JSON(fiber.Map{
+			"message": gorm.ErrRecordNotFound.Error(),
 		})
 		return
 	}
@@ -112,15 +113,21 @@ func (h controller) DeleteAccount(c *fiber.Ctx) {
 }
 
 func (h controller) UpdateAccount(c *fiber.Ctx) {
-	var newUser User
-	if err := c.BodyParser(&newUser); err != nil {
+	var user User
+	if err := c.BodyParser(&user); err != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 		return
 	}
 
-	if res := h.DB.Where("id = ?", c.Params("id")).Updates(newUser); res.Error != nil {
+	errors := rest.ValidateStructPartially(user)
+	if errors != nil {
+		c.Status(fiber.StatusBadRequest).JSON(errors)
+		return
+	}
+
+	if res := h.DB.Where("id = ?", c.Params("id")).Updates(user); res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})

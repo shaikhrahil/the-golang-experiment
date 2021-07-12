@@ -25,3 +25,20 @@ func ValidateStruct(model interface{}) []*ErrorResponse {
 	}
 	return errors
 }
+
+func ValidateStructPartially(model interface{}) []*ErrorResponse {
+	var errors []*ErrorResponse
+	validate := validator.New()
+	validate.SetTagName("partial_validate")
+	err := validate.Struct(model)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element ErrorResponse
+			element.FailedField = err.StructNamespace()
+			element.Tag = err.Tag()
+			element.Value = err.Param()
+			errors = append(errors, &element)
+		}
+	}
+	return errors
+}
