@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	accounts "the-golang-experiment/accounts/lib"
 
 	"github.com/gofiber/fiber"
 	"gorm.io/driver/mysql"
@@ -20,13 +21,13 @@ func main() {
 	logger := log.Default()
 	logger.Println("Connected to DB")
 
-	if err := db.AutoMigrate(&User{}); err != nil {
+	if err := db.AutoMigrate(&accounts.User{}); err != nil {
 		log.Fatalln("Unable to migrate DB")
 	}
 
 	logger.Println("DB migrated")
 
-	Controller(&versioned, db, logger)
+	accounts.Controller(&versioned, db, logger)
 
 	app.Listen(":8000")
 }
