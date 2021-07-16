@@ -1,4 +1,4 @@
-module the-golang-experiment
+module github.com/shaikhrahil/the-golang-experiment
 
 go 1.16
 
