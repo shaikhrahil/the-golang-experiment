@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	accounts "the-golang-experiment/accounts/lib"
+
+	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 
 	"github.com/gofiber/fiber"
 	"gorm.io/driver/mysql"

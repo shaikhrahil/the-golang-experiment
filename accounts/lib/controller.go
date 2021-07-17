@@ -2,7 +2,8 @@ package accounts
 
 import (
 	"log"
-	"the-golang-experiment/rest"
+
+	"github.com/shaikhrahil/the-golang-experiment/rest"
 
 	"github.com/gofiber/fiber"
 	"gorm.io/gorm"
@@ -21,14 +22,14 @@ func Controller(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
 		},
 	}
 	accountRoutes := router.Group("/accounts")
-	accountRoutes.Get("/", h.GetAccounts)
-	accountRoutes.Get("/:id", h.GetAccount)
-	accountRoutes.Post("/signup", h.SignUp)
-	accountRoutes.Patch("/:id", h.UpdateAccount)
-	accountRoutes.Delete("/:id", h.DeleteAccount)
+	accountRoutes.Get("/", h.getAccounts)
+	accountRoutes.Get("/:id", h.getAccount)
+	accountRoutes.Post("/signup", h.signUp)
+	accountRoutes.Patch("/:id", h.updateAccount)
+	accountRoutes.Delete("/:id", h.deleteAccount)
 }
 
-func (h controller) SignUp(c *fiber.Ctx) {
+func (h controller) signUp(c *fiber.Ctx) {
 	var user User
 	if err := c.BodyParser(&user); err != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -59,7 +60,7 @@ func (h controller) SignUp(c *fiber.Ctx) {
 	}
 }
 
-func (h controller) GetAccount(c *fiber.Ctx) {
+func (h controller) getAccount(c *fiber.Ctx) {
 	userId := c.Params("id")
 	var user User
 	res := h.DB.First(&user, "id = ?", userId)
@@ -77,7 +78,7 @@ func (h controller) GetAccount(c *fiber.Ctx) {
 	}
 }
 
-func (h controller) GetAccounts(c *fiber.Ctx) {
+func (h controller) getAccounts(c *fiber.Ctx) {
 	var users []User
 	res := h.DB.Find(&users)
 	if res.Error != nil {
@@ -95,7 +96,7 @@ func (h controller) GetAccounts(c *fiber.Ctx) {
 	}
 }
 
-func (h controller) DeleteAccount(c *fiber.Ctx) {
+func (h controller) deleteAccount(c *fiber.Ctx) {
 	if res := h.DB.Delete(&User{}, c.Params("id")); res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
@@ -112,7 +113,7 @@ func (h controller) DeleteAccount(c *fiber.Ctx) {
 	})
 }
 
-func (h controller) UpdateAccount(c *fiber.Ctx) {
+func (h controller) updateAccount(c *fiber.Ctx) {
 	var user User
 	if err := c.BodyParser(&user); err != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -137,5 +138,4 @@ func (h controller) UpdateAccount(c *fiber.Ctx) {
 	c.JSON(fiber.Map{
 		"status": 1,
 	})
-
 }
