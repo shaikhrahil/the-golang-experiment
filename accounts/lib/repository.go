@@ -3,29 +3,33 @@ package accounts
 import (
 	"log"
 
-	"github.com/shaikhrahil/the-golang-experiment/rest"
 	"gorm.io/gorm"
 )
 
-type repository struct {
-	rest.Controller
+type Repository struct {
+	db     *gorm.DB
+	logger *log.Logger
 }
 
-func Repository(db *gorm.DB, logger *log.Logger) {
+func NewRepository(db *gorm.DB, logger *log.Logger) *Repository {
+	return &Repository{
+		db:     db,
+		logger: logger,
+	}
 
 }
 
-func (r *repository) GetByEmail(email string) (User, error) {
+func (r *Repository) GetByEmail(email string) (User, error) {
 	var user User
-	if res := r.DB.Find(&user).Where("email = ?", email); res.Error != nil {
+	if res := r.db.Find(&user).Where("email = ?", email); res.Error != nil {
 		return user, res.Error
 	}
 	return user, nil
 }
 
-func (r *repository) GetByUserName(userName string) (User, error) {
+func (r *Repository) GetByUserName(userName string) (User, error) {
 	var user User
-	if res := r.DB.Find(&user).Where("userName = ?", userName); res.Error != nil {
+	if res := r.db.Find(&user).Where("userName = ?", userName); res.Error != nil {
 		return user, res.Error
 	}
 	return user, nil

@@ -22,13 +22,13 @@ func main() {
 	logger := log.Default()
 	logger.Println("Connected to DB")
 
-	if err := db.AutoMigrate(&accounts.User{}); err != nil {
-		log.Fatalln("Unable to migrate DB")
-	}
+	// if err := db.AutoMigrate(&accounts.User{}); err != nil {
+	// 	log.Fatalln("Unable to migrate DB")
+	// }
 
 	logger.Println("DB migrated")
 
-	accounts.Controller(&versioned, db, logger)
+	accounts.New(&versioned, db, logger)
 
 	app.Listen(":8000")
 }

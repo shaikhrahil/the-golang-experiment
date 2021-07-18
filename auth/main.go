@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-	accounts "the-golang-experiment/accounts/lib"
-	auth "the-golang-experiment/auth/lib"
+
+	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
+	auth "github.com/shaikhrahil/the-golang-experiment/auth/lib"
 
 	"github.com/gofiber/fiber"
 	"gorm.io/driver/mysql"
@@ -28,8 +29,8 @@ func main() {
 	}
 
 	logger.Println("DB migrated")
-	accounts.Controller(&versioned, db, logger)
-	auth.Controller(&versioned, db, logger)
+
+	auth.New(&versioned, db, logger)
 
 	app.Listen(":8000")
 }

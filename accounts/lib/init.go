@@ -7,7 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func Init(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
-	Controller(r, db, logger)
-	Repository(db, logger)
+type repositories struct {
+	Accounts Repository
+}
+
+func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
+	repos := repositories{
+		Accounts: *NewRepository(db, logger),
+	}
+	NewController(r, logger, repos)
 }

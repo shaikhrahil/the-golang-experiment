@@ -2,23 +2,25 @@ package auth
 
 import (
 	"log"
-	"the-golang-experiment/rest"
 
 	"github.com/gofiber/fiber"
-	"gorm.io/gorm"
+	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 )
 
 type controller struct {
-	rest.Controller
+	logger *log.Logger
+	repos  repositories
 }
 
-func Controller(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
+func NewController(r *fiber.Router, logger *log.Logger, repos map[string]Repository) {
 	router := *r
+	myRepos := repositories{
+		Auth:     repos["Auth"],
+		Accounts: accounts.Repository{},
+	}
 	h := controller{
-		Controller: rest.Controller{
-			DB:     db,
-			Logger: logger,
-		},
+		logger: logger,
+		repos:  myRepos,
 	}
 	authRoutes := router.Group("/auth")
 	authRoutes.Post("/login", h.Login)
