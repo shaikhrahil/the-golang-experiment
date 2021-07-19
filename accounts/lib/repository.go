@@ -11,12 +11,11 @@ type Repository struct {
 	logger *log.Logger
 }
 
-func NewRepository(db *gorm.DB, logger *log.Logger) *Repository {
-	return &Repository{
+func NewRepository(db *gorm.DB, logger *log.Logger) Repository {
+	return Repository{
 		db:     db,
 		logger: logger,
 	}
-
 }
 
 func (r *Repository) GetByEmail(email string) (User, error) {
@@ -33,4 +32,8 @@ func (r *Repository) GetByUserName(userName string) (User, error) {
 		return user, res.Error
 	}
 	return user, nil
+}
+
+func (r *Repository) GetSomething() string {
+	return "heheheheheehh"
 }

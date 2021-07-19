@@ -9,16 +9,16 @@ import (
 )
 
 type controller struct {
-	logger *log.Logger
-	repos  repositories
+	logger         *log.Logger
+	accountService Repository
 }
 
-func NewController(r *fiber.Router, logger *log.Logger, repos map[string]Repository) {
+func NewController(r *fiber.Router, logger *log.Logger, accountService Repository) {
 	router := *r
-	nmr := repositories{
-		Accounts: repos["Accounts"],
+	h := controller{
+		logger:         logger,
+		accountService: accountService,
 	}
-	h := controller{logger: logger, repos: nmr}
 	accountRoutes := router.Group("/accounts")
 	accountRoutes.Get("/", h.getAccounts)
 	accountRoutes.Get("/:id", h.getAccount)
@@ -42,7 +42,7 @@ func (h controller) signUp(c *fiber.Ctx) {
 		return
 	}
 
-	u := h.repos.Accounts.db.Create(&user)
+	u := h.accountService.db.Create(&user)
 
 	if u.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -61,7 +61,7 @@ func (h controller) signUp(c *fiber.Ctx) {
 func (h controller) getAccount(c *fiber.Ctx) {
 	userId := c.Params("id")
 	var user User
-	res := h.repos.Accounts.db.First(&user, "id = ?", userId)
+	res := h.accountService.db.First(&user, "id = ?", userId)
 	if res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
@@ -78,7 +78,7 @@ func (h controller) getAccount(c *fiber.Ctx) {
 
 func (h controller) getAccounts(c *fiber.Ctx) {
 	var users []User
-	res := h.repos.Accounts.db.Find(&users)
+	res := h.accountService.db.Find(&users)
 	if res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
@@ -95,7 +95,7 @@ func (h controller) getAccounts(c *fiber.Ctx) {
 }
 
 func (h controller) deleteAccount(c *fiber.Ctx) {
-	if res := h.repos.Accounts.db.Delete(&User{}, c.Params("id")); res.Error != nil {
+	if res := h.accountService.db.Delete(&User{}, c.Params("id")); res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
@@ -126,9 +126,14 @@ func (h controller) updateAccount(c *fiber.Ctx) {
 		return
 	}
 
-	if res := h.repos.Accounts.db.Where("id = ?", c.Params("id")).Updates(user); res.Error != nil {
+	if res := h.accountService.db.Where("id = ?", c.Params("id")).Updates(user); res.Error != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
+		})
+		return
+	} else if res.RowsAffected == 0 {
+		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": gorm.ErrRecordNotFound.Error(),
 		})
 		return
 	}

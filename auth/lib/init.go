@@ -15,8 +15,9 @@ type repositories struct {
 
 func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
 	repos := repositories{
-		Auth:     *NewRepository(db, logger),
-		Accounts: *accounts.NewRepository(db, logger),
+		Auth:     NewRepository(db, logger),
+		Accounts: accounts.NewRepository(db, logger),
 	}
-	NewController(r, logger, repos)
+	accounts.NewController(r, logger, repos.Accounts)
+	NewController(r, logger, repos.Auth, repos.Accounts)
 }

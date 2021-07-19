@@ -8,22 +8,20 @@ import (
 )
 
 type controller struct {
-	logger *log.Logger
-	repos  repositories
+	logger         *log.Logger
+	authService    Repository
+	accountService accounts.Repository
 }
 
-func NewController(r *fiber.Router, logger *log.Logger, repos map[string]Repository) {
+func NewController(r *fiber.Router, logger *log.Logger, authService Repository, accountsService accounts.Repository) {
 	router := *r
-	myRepos := repositories{
-		Auth:     repos["Auth"],
-		Accounts: accounts.Repository{},
-	}
 	h := controller{
-		logger: logger,
-		repos:  myRepos,
+		logger:         logger,
+		authService:    authService,
+		accountService: accountsService,
 	}
 	authRoutes := router.Group("/auth")
-	authRoutes.Post("/login", h.Login)
+	authRoutes.Get("/login", h.Login)
 	authRoutes.Post("/logout", h.Logout)
 	authRoutes.Post("/token/refresh", h.RefreshToken)
 	authRoutes.Post("/token/validate", h.ValidateToken)
@@ -31,7 +29,8 @@ func NewController(r *fiber.Router, logger *log.Logger, repos map[string]Reposit
 
 func (u *controller) Login(c *fiber.Ctx) {
 	c.JSON(fiber.Map{
-		"awesome": "hello world !!",
+		"accountsService": u.accountService.GetSomething(),
+		"authService":     u.authService.GetSomething(),
 	})
 }
 
