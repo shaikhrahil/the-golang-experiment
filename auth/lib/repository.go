@@ -28,7 +28,7 @@ type TokenPayload struct {
 
 // Generate generates the jwt token based on payload
 func Generate(payload *TokenPayload) string {
-	v, err := time.ParseDuration("2000000000")
+	v, err := time.ParseDuration("3h")
 
 	if err != nil {
 		panic("Invalid time duration. Should be time.ParseDuration string")

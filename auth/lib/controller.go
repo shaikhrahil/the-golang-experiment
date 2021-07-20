@@ -26,26 +26,22 @@ func NewController(r *fiber.Router, logger *log.Logger, authService Repository, 
 	}
 	authRoutes := router.Group("/auth")
 	authRoutes.Post("/login", h.Login)
+	authRoutes.Post("/signup", h.Signup)
 	authRoutes.Post("/logout", h.Logout)
 	authRoutes.Post("/token/refresh", h.RefreshToken)
 }
 
 type loginReq struct {
 	email    string `validate:"required,email,min=3,max=32" partial_validate:"omitempty,email,min=3,max=32"`
-	password string `validate:"required,min=10,max=32" partial_validate:"omitempty,min=10,max=32"`
+	password string `validate:"required,min=10,max=32"`
 }
 
-func (u *controller) Login(c *fiber.Ctx) error {
+func (u controller) Login(c *fiber.Ctx) error {
 	var user loginReq
 	var userDB accounts.User
-	log.Println(user.email, user)
-	// if err := ctx.BodyParser(body); err != nil {
-	// 	return fiber.ErrBadRequest
-	// }
-	if err := rest.ParseBodyAndValidate(c, &user); err != nil {
+	if err := rest.ParseAndValidatePartially(c, &user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
-
 	res := u.accountService.GetByEmail(&userDB, user.email)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
@@ -53,8 +49,8 @@ func (u *controller) Login(c *fiber.Ctx) error {
 			Message: `Invalid Username or EmailID`,
 		})
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.password), 10)
-	if err != nil {
+	hash, hashErr := bcrypt.GenerateFromPassword([]byte(user.password), 10)
+	if hashErr != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
 			Code:    fiber.StatusUnauthorized,
 			Message: `Invalid Password`,
