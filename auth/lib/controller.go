@@ -1,10 +1,14 @@
 package auth
 
 import (
+	"errors"
 	"log"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
+	"github.com/shaikhrahil/the-golang-experiment/rest"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type controller struct {
@@ -21,27 +25,89 @@ func NewController(r *fiber.Router, logger *log.Logger, authService Repository, 
 		accountService: accountsService,
 	}
 	authRoutes := router.Group("/auth")
-	authRoutes.Get("/login", h.Login)
+	authRoutes.Post("/login", h.Login)
 	authRoutes.Post("/logout", h.Logout)
 	authRoutes.Post("/token/refresh", h.RefreshToken)
-	authRoutes.Post("/token/validate", h.ValidateToken)
 }
 
-func (u *controller) Login(c *fiber.Ctx) {
-	c.JSON(fiber.Map{
-		"accountsService": u.accountService.GetSomething(),
-		"authService":     u.authService.GetSomething(),
+type loginReq struct {
+	email    string `validate:"required,email,min=3,max=32" partial_validate:"omitempty,email,min=3,max=32"`
+	password string `validate:"required,min=10,max=32" partial_validate:"omitempty,min=10,max=32"`
+}
+
+func (u *controller) Login(c *fiber.Ctx) error {
+	var user loginReq
+	var userDB accounts.User
+	log.Println(user.email, user)
+	// if err := ctx.BodyParser(body); err != nil {
+	// 	return fiber.ErrBadRequest
+	// }
+	if err := rest.ParseBodyAndValidate(c, &user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
+
+	res := u.accountService.GetByEmail(&userDB, user.email)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
+			Code:    fiber.StatusUnauthorized,
+			Message: `Invalid Username or EmailID`,
+		})
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.password), 10)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
+			Code:    fiber.StatusUnauthorized,
+			Message: `Invalid Password`,
+		})
+	}
+	user.password = string(hash)
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.password), []byte(userDB.Password)); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
+			Code:    fiber.StatusUnauthorized,
+			Message: `Invalid Password`,
+		})
+
+	}
+
+	tkn := Generate(&TokenPayload{
+		ID: userDB.ID,
+	})
+
+	return c.JSON(fiber.Map{
+		"token": tkn,
 	})
 }
 
-func (u *controller) Logout(c *fiber.Ctx) {
+func (u *controller) Signup(c *fiber.Ctx) error {
+	var user accounts.User
+	if err := rest.ParseBodyAndValidate(c, user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+
+	}
+	res := u.accountService.AddUser(&user)
+	if res.Error != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(&fiber.Error{
+			Code:    fiber.StatusBadRequest,
+			Message: res.Error.Error(),
+		})
+
+	}
+
+	tkn := Generate(&TokenPayload{
+		ID: user.ID,
+	})
+
+	return c.JSON(fiber.Map{
+		"token": tkn,
+	})
 
 }
 
-func (u *controller) RefreshToken(c *fiber.Ctx) {
-
+func (u *controller) Logout(c *fiber.Ctx) error {
+	return c.JSON("Workinh !!")
 }
 
-func (u *controller) ValidateToken(c *fiber.Ctx) {
-
+func (u *controller) RefreshToken(c *fiber.Ctx) error {
+	return c.JSON("Workinh !!")
 }

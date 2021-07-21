@@ -6,7 +6,7 @@ import (
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 	auth "github.com/shaikhrahil/the-golang-experiment/auth/lib"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

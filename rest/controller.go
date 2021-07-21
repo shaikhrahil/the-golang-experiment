@@ -3,7 +3,7 @@ package rest
 import (
 	"log"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 

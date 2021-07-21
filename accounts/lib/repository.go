@@ -18,22 +18,14 @@ func NewRepository(db *gorm.DB, logger *log.Logger) Repository {
 	}
 }
 
-func (r *Repository) GetByEmail(email string) (User, error) {
-	var user User
-	if res := r.db.Find(&user).Where("email = ?", email); res.Error != nil {
-		return user, res.Error
-	}
-	return user, nil
+func (r *Repository) GetByEmail(user *User, email string) *gorm.DB {
+	return r.db.Find(&user).Where("email = ?", email)
 }
 
-func (r *Repository) GetByUserName(userName string) (User, error) {
-	var user User
-	if res := r.db.Find(&user).Where("userName = ?", userName); res.Error != nil {
-		return user, res.Error
-	}
-	return user, nil
+func (r *Repository) GetByUserName(user *User, userName string) *gorm.DB {
+	return r.db.Find(&user).Where("userName = ?", userName)
 }
 
-func (r *Repository) GetSomething() string {
-	return "heheheheheehh"
+func (r *Repository) AddUser(user *User) *gorm.DB {
+	return r.db.Create(&user)
 }

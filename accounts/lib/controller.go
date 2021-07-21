@@ -3,7 +3,8 @@ package accounts
 import (
 	"log"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
+	authMiddle "github.com/shaikhrahil/the-golang-experiment/auth/lib/middleware"
 	"github.com/shaikhrahil/the-golang-experiment/rest"
 	"gorm.io/gorm"
 )
@@ -19,126 +20,82 @@ func NewController(r *fiber.Router, logger *log.Logger, accountService Repositor
 		logger:         logger,
 		accountService: accountService,
 	}
-	accountRoutes := router.Group("/accounts")
+	accountRoutes := router.Group("/accounts").Use(authMiddle.Middleware)
 	accountRoutes.Get("/", h.getAccounts)
 	accountRoutes.Get("/:id", h.getAccount)
-	accountRoutes.Post("/signup", h.signUp)
 	accountRoutes.Patch("/:id", h.updateAccount)
 	accountRoutes.Delete("/:id", h.deleteAccount)
 }
 
-func (h controller) signUp(c *fiber.Ctx) {
-	var user User
-	if err := c.BodyParser(&user); err != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-		return
-	}
-
-	errors := rest.ValidateStruct(user)
-	if errors != nil {
-		c.Status(fiber.StatusBadRequest).JSON(errors)
-		return
-	}
-
-	u := h.accountService.db.Create(&user)
-
-	if u.Error != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": u.Error.Error(),
-		})
-		return
-	}
-
-	if err := c.JSON(&user); err != nil {
-		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
-}
-
-func (h controller) getAccount(c *fiber.Ctx) {
+func (h controller) getAccount(c *fiber.Ctx) error {
 	userId := c.Params("id")
 	var user User
 	res := h.accountService.db.First(&user, "id = ?", userId)
 	if res.Error != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
-		return
+
 	}
-	if err := c.JSON(user); err != nil {
-		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-		return
-	}
+	return c.JSON(user)
 }
 
-func (h controller) getAccounts(c *fiber.Ctx) {
+func (h controller) getAccounts(c *fiber.Ctx) error {
 	var users []User
 	res := h.accountService.db.Find(&users)
 	if res.Error != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
-		return
-	}
 
-	if err := c.JSON(users); err != nil {
-		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-		return
 	}
+	return c.JSON(users)
 }
 
-func (h controller) deleteAccount(c *fiber.Ctx) {
+func (h controller) deleteAccount(c *fiber.Ctx) error {
 	if res := h.accountService.db.Delete(&User{}, c.Params("id")); res.Error != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
-		return
+
 	} else if res.RowsAffected == 0 {
-		c.JSON(fiber.Map{
+		return c.JSON(fiber.Map{
 			"message": gorm.ErrRecordNotFound.Error(),
 		})
-		return
+
 	}
-	c.JSON(fiber.Map{
+	return c.JSON(fiber.Map{
 		"status": 1,
 	})
+
 }
 
-func (h controller) updateAccount(c *fiber.Ctx) {
+func (h controller) updateAccount(c *fiber.Ctx) error {
 	var user User
 	if err := c.BodyParser(&user); err != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
-		return
 	}
 
 	errors := rest.ValidateStructPartially(user)
 	if errors != nil {
-		c.Status(fiber.StatusBadRequest).JSON(errors)
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
+
 	}
 
 	if res := h.accountService.db.Where("id = ?", c.Params("id")).Updates(user); res.Error != nil {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
-		return
+
 	} else if res.RowsAffected == 0 {
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": gorm.ErrRecordNotFound.Error(),
 		})
-		return
 	}
 
-	c.JSON(fiber.Map{
+	return c.JSON(fiber.Map{
 		"status": 1,
 	})
 }

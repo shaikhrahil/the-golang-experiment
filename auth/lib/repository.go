@@ -2,9 +2,11 @@ package auth
 
 import (
 	"log"
+	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type Repository struct {
@@ -19,12 +21,29 @@ func NewRepository(db *gorm.DB, logger *log.Logger) Repository {
 	}
 }
 
-// CheckPasswordHash compare password with hash
-func (r *Repository) CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+// TokenPayload defines the payload for the token
+type TokenPayload struct {
+	ID uint
 }
 
-func (r *Repository) GetSomething() string {
-	return "heheheheheehh"
+// Generate generates the jwt token based on payload
+func Generate(payload *TokenPayload) string {
+	v, err := time.ParseDuration("2000000000")
+
+	if err != nil {
+		panic("Invalid time duration. Should be time.ParseDuration string")
+	}
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp": time.Now().Add(v).Unix(),
+		"ID":  payload.ID,
+	})
+
+	token, err := t.SignedString([]byte("config.TOKENKEY"))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return token
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
