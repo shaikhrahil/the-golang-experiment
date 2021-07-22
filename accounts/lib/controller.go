@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	authMiddle "github.com/shaikhrahil/the-golang-experiment/auth/lib/middleware"
 	"github.com/shaikhrahil/the-golang-experiment/rest"
 	"gorm.io/gorm"
 )
@@ -20,7 +19,7 @@ func NewController(r *fiber.Router, logger *log.Logger, accountService Repositor
 		logger:         logger,
 		accountService: accountService,
 	}
-	accountRoutes := router.Group("/accounts").Use(authMiddle.Middleware)
+	accountRoutes := router.Group("/accounts")
 	accountRoutes.Get("/", h.getAccounts)
 	accountRoutes.Get("/:id", h.getAccount)
 	accountRoutes.Patch("/:id", h.updateAccount)

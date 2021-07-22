@@ -1,4 +1,4 @@
-package authMiddle
+package auth
 
 import (
 	"errors"
@@ -8,11 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 )
-
-// TokenPayload defines the payload for the token
-type TokenPayload struct {
-	ID uint
-}
 
 func Middleware(c *fiber.Ctx) error {
 	h := c.Get("Authorization")
