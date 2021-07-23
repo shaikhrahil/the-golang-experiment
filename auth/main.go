@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 	auth "github.com/shaikhrahil/the-golang-experiment/auth/lib"
+	"github.com/shaikhrahil/the-golang-experiment/config"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/mysql"
@@ -15,7 +17,8 @@ func main() {
 
 	app := fiber.New()
 
-	dsn := "auth-service:huhu@tcp(127.0.0.1:3306)/auth?charset=utf8mb4&parseTime=True&loc=Local"
+	config := config.GetConfig("auth")
+	dsn := fmt.Sprintf(`%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local`, config.DB_USERNAME, config.DB_PASSWORD, config.DB_HOST, config.DB_PORT, config.DB_NAME)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalln("Unable to connect to DB")
