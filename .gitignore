@@ -13,3 +13,7 @@
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+
+# Config json files
+*_config.json
+!*sample_config.json
