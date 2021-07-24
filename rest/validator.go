@@ -7,18 +7,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type ErrorResponse struct {
-	FailedField string
-	Tag         string
-	Value       string
-}
-
-// ParseBody is helper function for parsing the body.
+// parseBody is helper function for parsing the body.
 // Is any error occurs it will panic.
 // Its just a helper function to avoid writing if condition again n again.
-func ParseBody(ctx *fiber.Ctx, body interface{}) *fiber.Error {
+func parseBody(ctx *fiber.Ctx, body interface{}) error {
 	if err := ctx.BodyParser(body); err != nil {
-		return fiber.ErrBadRequest
+		return err
 	}
 
 	return nil
@@ -27,34 +21,16 @@ func ParseBody(ctx *fiber.Ctx, body interface{}) *fiber.Error {
 // ParseBodyAndValidate is helper function for parsing the body.
 // Is any error occurs it will panic.
 // Its just a helper function to avoid writing if condition again n again.
-func ParseBodyAndValidate(ctx *fiber.Ctx, body interface{}) *fiber.Error {
-	if err := ParseBody(ctx, body); err != nil {
+func ParseBodyAndValidate(ctx *fiber.Ctx, body interface{}) error {
+	if err := parseBody(ctx, body); err != nil {
 		return err
 	}
-
 	if err := ValidateStruct(body); err != nil {
 		return &fiber.Error{
 			Code:    fiber.StatusBadRequest,
 			Message: strings.Join(err, ","),
 		}
 	}
-
-	return nil
-
-}
-
-func ParseAndValidatePartially(ctx *fiber.Ctx, body interface{}) *fiber.Error {
-	if err := ParseBody(ctx, body); err != nil {
-		return err
-	}
-
-	if err := ValidateStructPartially(body); err != nil {
-		return &fiber.Error{
-			Code:    fiber.StatusBadRequest,
-			Message: strings.Join(err, ","),
-		}
-	}
-
 	return nil
 }
 
@@ -68,6 +44,21 @@ func ValidateStruct(model interface{}) []string {
 		}
 	}
 	return errors
+}
+
+func ParseAndValidatePartially(ctx *fiber.Ctx, body interface{}) error {
+	if err := parseBody(ctx, body); err != nil {
+		return err
+	}
+
+	if err := ValidateStructPartially(body); err != nil {
+		return &fiber.Error{
+			Code:    fiber.StatusBadRequest,
+			Message: strings.Join(err, ","),
+		}
+	}
+
+	return nil
 }
 
 func ValidateStructPartially(model interface{}) []string {
