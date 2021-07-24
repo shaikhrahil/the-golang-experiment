@@ -24,7 +24,7 @@ func main() {
 	logger := log.Default()
 	logger.Println("Connected to DB")
 
-	if err := db.AutoMigrate(&accounts.User{}); err != nil {
+	if err := db.AutoMigrate(&accounts.User{}, &todo.Todo{}); err != nil {
 		log.Fatalln("Unable to migrate DB")
 	}
 
