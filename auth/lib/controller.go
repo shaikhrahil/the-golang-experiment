@@ -1,14 +1,11 @@
 package auth
 
 import (
-	"errors"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 	"github.com/shaikhrahil/the-golang-experiment/rest"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type controller struct {
@@ -32,38 +29,34 @@ func NewController(r *fiber.Router, logger *log.Logger, authService Repository, 
 }
 
 type loginReq struct {
-	email    string `validate:"required,email,min=3,max=32" partial_validate:"omitempty,email,min=3,max=32"`
-	password string `validate:"required,min=10,max=32"`
+	Email    string `validate:"required,email,min=3,max=32" partial_validate:"omitempty,email,min=3,max=32"`
+	Password string `validate:"required,min=10,max=32"`
 }
 
 func (u controller) Login(c *fiber.Ctx) error {
-	var user loginReq
+	var creds loginReq
 	var userDB accounts.User
-	if err := rest.ParseAndValidatePartially(c, &user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(err)
+	if err := rest.ParseBodyAndValidate(c, &creds); err != nil {
+		u.logger.Println(err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.ErrBadRequest)
 	}
-	res := u.accountService.GetByEmail(&userDB, user.email)
-	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+
+	res := u.accountService.GetByEmail(&userDB, creds.Email)
+
+	if res.Error != nil {
+		u.logger.Println(res.Error.Error())
 		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
 			Code:    fiber.StatusUnauthorized,
 			Message: `Invalid Username or EmailID`,
 		})
 	}
-	hash, hashErr := bcrypt.GenerateFromPassword([]byte(user.password), 10)
-	if hashErr != nil {
+
+	if !CheckPasswordHash(creds.Password, userDB.Password) {
+		u.logger.Println("Invallid password")
 		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
 			Code:    fiber.StatusUnauthorized,
 			Message: `Invalid Password`,
 		})
-	}
-	user.password = string(hash)
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.password), []byte(userDB.Password)); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
-			Code:    fiber.StatusUnauthorized,
-			Message: `Invalid Password`,
-		})
-
 	}
 
 	tkn := Generate(&TokenPayload{
@@ -77,17 +70,19 @@ func (u controller) Login(c *fiber.Ctx) error {
 
 func (u *controller) Signup(c *fiber.Ctx) error {
 	var user accounts.User
-	if err := rest.ParseBodyAndValidate(c, user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(err)
 
+	if err := rest.ParseBodyAndValidate(c, &user); err != nil {
+		u.logger.Println(err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.ErrBadRequest)
 	}
+
 	res := u.accountService.AddUser(&user)
+
 	if res.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(&fiber.Error{
 			Code:    fiber.StatusBadRequest,
 			Message: res.Error.Error(),
 		})
-
 	}
 
 	tkn := Generate(&TokenPayload{
