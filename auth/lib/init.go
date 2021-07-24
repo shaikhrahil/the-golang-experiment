@@ -18,7 +18,7 @@ func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
 		Auth:     NewRepository(db, logger),
 		Accounts: accounts.NewRepository(db, logger),
 	}
-	protected := (*r).Use(Middleware)
-	accounts.NewController(&protected, logger, repos.Accounts)
 	NewController(r, logger, repos.Auth, repos.Accounts)
+	(*r).Use(Middleware)
+	accounts.NewController(r, logger, repos.Accounts)
 }
