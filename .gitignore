@@ -17,3 +17,6 @@ vendor/
 # Config json files
 *_config.json
 !*sample_config.json
+
+# Debug files
+__debug_bin
