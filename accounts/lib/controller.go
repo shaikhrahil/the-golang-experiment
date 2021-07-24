@@ -29,7 +29,7 @@ func NewController(r *fiber.Router, logger *log.Logger, accountService Repositor
 func (h controller) getAccount(c *fiber.Ctx) error {
 	userId := c.Params("id")
 	var user User
-	res := h.accountService.db.First(&user, "id = ?", userId)
+	res := h.accountService.db.Where("id = ?", userId).First(&user)
 	if res.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
@@ -52,7 +52,8 @@ func (h controller) getAccounts(c *fiber.Ctx) error {
 }
 
 func (h controller) deleteAccount(c *fiber.Ctx) error {
-	if res := h.accountService.db.Delete(&User{}, c.Params("id")); res.Error != nil {
+	userId := c.Params("id")
+	if res := h.accountService.db.Delete(&User{}, userId); res.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
@@ -63,9 +64,7 @@ func (h controller) deleteAccount(c *fiber.Ctx) error {
 		})
 
 	}
-	return c.JSON(fiber.Map{
-		"status": 1,
-	})
+	return c.JSON(userId)
 
 }
 
@@ -82,8 +81,8 @@ func (h controller) updateAccount(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 
 	}
-
-	if res := h.accountService.db.Where("id = ?", c.Params("id")).Updates(user); res.Error != nil {
+	userId := c.Params("id")
+	if res := h.accountService.db.Where("id = ?", userId).Updates(user); res.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": res.Error.Error(),
 		})
@@ -94,7 +93,5 @@ func (h controller) updateAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status": 1,
-	})
+	return c.JSON(userId)
 }

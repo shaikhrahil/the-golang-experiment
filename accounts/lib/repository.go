@@ -19,7 +19,7 @@ func NewRepository(db *gorm.DB, logger *log.Logger) Repository {
 }
 
 func (r *Repository) GetByEmail(user *User, email string) *gorm.DB {
-	return r.db.Find(&user).Where("email = ?", email)
+	return r.db.Where("email = ?", email).First(&user)
 }
 
 func (r *Repository) GetByUserName(user *User, userName string) *gorm.DB {
