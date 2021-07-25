@@ -1,17 +1,13 @@
 package accounts
 
 import (
-	"time"
-
+	"github.com/shaikhrahil/the-golang-experiment/rest"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID        uint           `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `json:"deleteddAt" gorm:"index"`
+	rest.Base
 
 	FirstName string `json:"firstName" gorm:"type:varchar(255)" validate:"required,min=3,max=32" partial_validate:"omitempty,min=3,max=32"`
 	LastName  string `json:"lastName" gorm:"type:varchar(255)" validate:"omitempty,min=3,max=32"`
