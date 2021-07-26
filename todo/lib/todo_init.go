@@ -16,6 +16,7 @@ type repositories struct {
 }
 
 func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
+	migrate(db)
 	repos := repositories{
 		Auth:     auth.NewRepository(db, logger),
 		Accounts: accounts.NewRepository(db, logger),
@@ -25,4 +26,15 @@ func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
 	(*r).Use(auth.Middleware)
 	accounts.NewController(r, logger, repos.Accounts)
 	NewController(r, logger, repos.Auth, repos.Accounts, repos.Todo)
+}
+
+func migrate(db *gorm.DB) {
+	if err := db.AutoMigrate(&User{}, &Todo{}, UserTodo{}); err != nil {
+		log.Fatalln("Unable to migrate DB")
+	}
+
+	if err := db.SetupJoinTable(&User{}, "Todos", &UserTodo{}); err != nil {
+		log.Fatalln(err.Error())
+	}
+
 }

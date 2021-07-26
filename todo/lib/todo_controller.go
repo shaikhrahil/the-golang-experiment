@@ -76,13 +76,15 @@ func (h controller) update(c *fiber.Ctx) error {
 }
 
 func (h controller) get(c *fiber.Ctx) error {
-	var todo Todo
-	todoID := c.Params("id")
-	if err := h.todoService.db.Where("id = ?", todoID).First(&todo).Error; err != nil {
+	var todos []Todo
+	var user User
+	// todoID := c.Params("id")
+	if err := h.todoService.db.Model(&user).Association("Todos").Find(&todos); err != nil {
+		// if err := h.todoService.db.Preload("todo", "todo_id = ?", todoID).First(&todo).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.JSON(fiber.ErrNotFound)
 	}
-	return c.JSON(todo)
+	return c.JSON(todos)
 }
 
 func (h controller) delete(c *fiber.Ctx) error {
