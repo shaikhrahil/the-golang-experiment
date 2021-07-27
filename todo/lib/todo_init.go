@@ -33,8 +33,12 @@ func migrate(db *gorm.DB) {
 		log.Fatalln("Unable to migrate DB")
 	}
 
-	if err := db.SetupJoinTable(&User{}, "Todos", &UserTodo{}); err != nil {
-		log.Fatalln(err.Error())
-	}
+	// if err := db.SetupJoinTable(&User{}, "Todos", &UserTodo{}); err != nil {
+	// 	log.Fatalln(err.Error())
+	// }
+
+	// if err := db.SetupJoinTable(&Todo{}, "UserID", &UserTodo{}); err != nil {
+	// 	log.Fatalln(err.Error())
+	// }
 
 }

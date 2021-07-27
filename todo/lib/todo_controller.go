@@ -26,6 +26,7 @@ func NewController(r *fiber.Router, logger *log.Logger, authService auth.Reposit
 		todoService:    todoService,
 	}
 	todoRoutes := router.Group("/todo")
+	todoRoutes.Get("/", h.getAll)
 	todoRoutes.Get("/:id", h.get)
 	todoRoutes.Delete("/:id", h.delete)
 	todoRoutes.Patch("/:id", h.update)
@@ -37,6 +38,11 @@ func (h controller) add(c *fiber.Ctx) error {
 	if err := rest.ParseBodyAndValidate(c, &todo); err != nil {
 		return c.JSON(err)
 	}
+	todo.UserTodo.UserID = rest.GetUser(c)
+	// todo.UserTodo = UserTodo{
+	// 	UserID: *rest.GetUser(c),
+	// 	TodoID: todo.ID,
+	// }
 	if err := h.todoService.db.Create(&todo).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Error{
@@ -75,16 +81,23 @@ func (h controller) update(c *fiber.Ctx) error {
 	return c.JSON(todo)
 }
 
-func (h controller) get(c *fiber.Ctx) error {
-	var todos []Todo
-	var user User
-	// todoID := c.Params("id")
-	if err := h.todoService.db.Model(&user).Association("Todos").Find(&todos); err != nil {
-		// if err := h.todoService.db.Preload("todo", "todo_id = ?", todoID).First(&todo).Error; err != nil {
+func (h controller) getAll(c *fiber.Ctx) error {
+	var todos []TodoSummary
+	if err := h.todoService.db.Model(&Todo{}).Joins("left join user_todos on todos.user_todo_id = user_todos.id").Where("user_todos.user_id = ?", rest.GetUser(c)).Find(&todos).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.JSON(fiber.ErrNotFound)
 	}
 	return c.JSON(todos)
+}
+
+func (h controller) get(c *fiber.Ctx) error {
+	var todo Todo
+	todoID := c.Params("id")
+	if err := h.todoService.db.Where("id = ?", todoID).First(&todo).Error; err != nil {
+		h.logger.Println(err.Error())
+		return c.JSON(fiber.ErrNotFound)
+	}
+	return c.JSON(todo)
 }
 
 func (h controller) delete(c *fiber.Ctx) error {
