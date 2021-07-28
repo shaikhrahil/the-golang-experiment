@@ -10,5 +10,5 @@ type Base struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `json:"deleteddAt" gorm:"index"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
 }
