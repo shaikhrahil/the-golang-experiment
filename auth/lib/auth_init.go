@@ -5,8 +5,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
+	"github.com/shaikhrahil/the-golang-experiment/rest"
 	"gorm.io/gorm"
 )
+
+type Configuration struct {
+	rest.Configuration
+}
 
 type repositories struct {
 	Auth     Repository

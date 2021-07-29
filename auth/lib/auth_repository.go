@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/shaikhrahil/the-golang-experiment/auth/config"
 )
 
 type Repository struct {
@@ -31,7 +32,8 @@ type TokenPayload struct {
 
 // Generate generates the jwt token based on payload
 func Generate(payload *TokenPayload) string {
-	v, err := time.ParseDuration("3h")
+	config := config.GetConfig("auth")
+	v, err := time.ParseDuration(config.JWT_TOKEN_EXPIRY)
 
 	if err != nil {
 		panic("Invalid time duration. Should be time.ParseDuration string")
@@ -42,7 +44,7 @@ func Generate(payload *TokenPayload) string {
 		"ID":  payload.ID,
 	})
 
-	token, err := t.SignedString([]byte("config.TOKENKEY"))
+	token, err := t.SignedString([]byte(config.JWT_SECRET))
 
 	if err != nil {
 		panic(err)
@@ -86,18 +88,10 @@ func parse(token string) (*jwt.Token, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
+		config := config.GetConfig("auth")
 
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return []byte("config.TOKENKEY"), nil
+		return []byte(config.JWT_SECRET), nil
 	})
-}
-
-func generateHash(password string) (string, error) {
-	if hash, hashErr := bcrypt.GenerateFromPassword([]byte(password), 10); hashErr != nil {
-		return "", hashErr
-	} else {
-		return string(hash), nil
-	}
 }
 
 func CheckPasswordHash(password, hash string) bool {

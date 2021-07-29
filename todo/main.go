@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/shaikhrahil/the-golang-experiment/config"
+	"github.com/shaikhrahil/the-golang-experiment/accounts/config"
 	todo "github.com/shaikhrahil/the-golang-experiment/todo/lib"
 	"github.com/shaikhrahil/the-golang-experiment/todo/lib/user"
 	"gorm.io/driver/mysql"

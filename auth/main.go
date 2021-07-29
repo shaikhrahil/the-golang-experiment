@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/shaikhrahil/the-golang-experiment/accounts/config"
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 	auth "github.com/shaikhrahil/the-golang-experiment/auth/lib"
-	"github.com/shaikhrahil/the-golang-experiment/config"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/mysql"
