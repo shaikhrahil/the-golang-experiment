@@ -18,12 +18,12 @@ type repositories struct {
 	Accounts accounts.Repository
 }
 
-func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
+func New(r *fiber.Router, db *gorm.DB, conf rest.Configuration, logger *log.Logger) {
 	repos := repositories{
 		Auth:     NewRepository(db, logger),
 		Accounts: accounts.NewRepository(db, logger),
 	}
-	NewController(r, logger, repos.Auth, repos.Accounts)
-	(*r).Use(Middleware)
-	accounts.NewController(r, logger, repos.Accounts)
+	NewController(r, conf, logger, repos.Auth, repos.Accounts)
+	(*r).Use(GetMiddleware(conf))
+	accounts.NewController(r, conf, logger, repos.Accounts)
 }

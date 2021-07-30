@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	rest.Base
+	rest.Model
 
 	FirstName string `json:"firstName" gorm:"type:varchar(255)" validate:"required,min=3,max=32" partial_validate:"omitempty,min=3,max=32"`
 	LastName  string `json:"lastName" gorm:"type:varchar(255)" validate:"omitempty,min=3,max=32"`

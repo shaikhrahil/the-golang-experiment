@@ -4,10 +4,11 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/shaikhrahil/the-golang-experiment/rest"
 	"gorm.io/gorm"
 )
 
-func New(r *fiber.Router, db *gorm.DB, logger *log.Logger) {
+func New(r *fiber.Router, db *gorm.DB, conf rest.Configuration, logger *log.Logger) {
 	Accounts := NewRepository(db, logger)
-	NewController(r, logger, Accounts)
+	NewController(r, conf, logger, Accounts)
 }

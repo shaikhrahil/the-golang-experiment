@@ -11,21 +11,23 @@ import (
 )
 
 type controller struct {
+	config         rest.Configuration
 	logger         *log.Logger
 	accountService accounts.Repository
 	authService    auth.Repository
 	todoService    Repository
 }
 
-func NewController(r *fiber.Router, logger *log.Logger, authService auth.Repository, accountsService accounts.Repository, todoService Repository) {
+func NewController(r *fiber.Router, conf rest.Configuration, logger *log.Logger, authService auth.Repository, accountsService accounts.Repository, todoService Repository) {
 	router := *r
 	h := controller{
+		config:         conf,
 		logger:         logger,
 		authService:    authService,
 		accountService: accountsService,
 		todoService:    todoService,
 	}
-	todoRoutes := router.Group("/todo")
+	todoRoutes := router.Group(h.config.TODO.PREFIX)
 	todoRoutes.Get("/", h.getAll)
 	todoRoutes.Get("/:id", h.get)
 	todoRoutes.Delete("/:id", h.delete)

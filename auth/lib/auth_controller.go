@@ -12,16 +12,18 @@ type controller struct {
 	logger         *log.Logger
 	authService    Repository
 	accountService accounts.Repository
+	config         rest.Configuration
 }
 
-func NewController(r *fiber.Router, logger *log.Logger, authService Repository, accountsService accounts.Repository) {
+func NewController(r *fiber.Router, conf rest.Configuration, logger *log.Logger, authService Repository, accountsService accounts.Repository) {
 	router := *r
 	h := controller{
 		logger:         logger,
 		authService:    authService,
 		accountService: accountsService,
+		config:         conf,
 	}
-	authRoutes := router.Group("/auth")
+	authRoutes := router.Group(h.config.AUTH.PREFIX)
 	authRoutes.Post("/login", h.Login)
 	authRoutes.Post("/signup", h.Signup)
 	authRoutes.Post("/logout", h.Logout)
@@ -61,7 +63,7 @@ func (u controller) Login(c *fiber.Ctx) error {
 
 	tkn := Generate(&TokenPayload{
 		ID: userDB.ID,
-	})
+	}, u.config.AUTH.JWT_TTL, u.config.AUTH.JWT_SECRET)
 
 	return c.JSON(fiber.Map{
 		"token": tkn,
@@ -87,7 +89,7 @@ func (u *controller) Signup(c *fiber.Ctx) error {
 
 	tkn := Generate(&TokenPayload{
 		ID: user.ID,
-	})
+	}, u.config.AUTH.JWT_TTL, u.config.AUTH.JWT_SECRET)
 
 	return c.JSON(fiber.Map{
 		"token": tkn,

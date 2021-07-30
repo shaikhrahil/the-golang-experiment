@@ -11,15 +11,17 @@ import (
 type controller struct {
 	logger         *log.Logger
 	accountService Repository
+	config         rest.Configuration
 }
 
-func NewController(r *fiber.Router, logger *log.Logger, accountService Repository) {
+func NewController(r *fiber.Router, conf rest.Configuration, logger *log.Logger, accountService Repository) {
 	router := *r
 	h := controller{
 		logger:         logger,
 		accountService: accountService,
+		config:         conf,
 	}
-	accountRoutes := router.Group("/accounts")
+	accountRoutes := router.Group(h.config.ACCOUNT.PREFIX)
 	accountRoutes.Get("/", h.getAccounts)
 	accountRoutes.Get("/:id", h.getAccount)
 	accountRoutes.Patch("/:id", h.updateAccount)
