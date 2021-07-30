@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/shaikhrahil/the-golang-experiment/rest"
 	todo "github.com/shaikhrahil/the-golang-experiment/todo/lib"
+	"github.com/shaikhrahil/the-golang-experiment/todo/lib/team"
 	"github.com/shaikhrahil/the-golang-experiment/todo/lib/user"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -36,7 +37,7 @@ func main() {
 }
 
 func migrate(db *gorm.DB) {
-	if err := db.AutoMigrate(&user.User{}, &todo.Todo{}); err != nil {
+	if err := db.AutoMigrate(&user.User{}, &todo.Todo{}, &team.Team{}); err != nil {
 		log.Fatalln("Unable to migrate DB")
 	}
 }
