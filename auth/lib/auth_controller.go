@@ -53,7 +53,7 @@ func (u controller) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	if !CheckPasswordHash(creds.Password, userDB.Password) {
+	if !u.authService.CheckPasswordHash(creds.Password, userDB.Password) {
 		u.logger.Println("Invallid password")
 		return c.Status(fiber.StatusUnauthorized).JSON(&fiber.Error{
 			Code:    fiber.StatusUnauthorized,
@@ -61,9 +61,7 @@ func (u controller) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	tkn := Generate(&TokenPayload{
-		ID: userDB.ID,
-	}, u.config.AUTH.JWT_TTL, u.config.AUTH.JWT_SECRET)
+	tkn := u.authService.Generate(userDB, u.config.AUTH.JWT_TTL, u.config.AUTH.JWT_SECRET)
 
 	return c.JSON(fiber.Map{
 		"token": tkn,
@@ -87,9 +85,7 @@ func (u *controller) Signup(c *fiber.Ctx) error {
 		})
 	}
 
-	tkn := Generate(&TokenPayload{
-		ID: user.ID,
-	}, u.config.AUTH.JWT_TTL, u.config.AUTH.JWT_SECRET)
+	tkn := u.authService.Generate(user, u.config.AUTH.JWT_TTL, u.config.AUTH.JWT_SECRET)
 
 	return c.JSON(fiber.Map{
 		"token": tkn,

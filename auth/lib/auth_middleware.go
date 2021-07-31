@@ -26,13 +26,17 @@ func GetMiddleware(config rest.Configuration) func(c *fiber.Ctx) error {
 		}
 
 		// Verify the token which is in the chunks
-		user, err := Verify(chunks[1], config.AUTH.JWT_SECRET)
+		user, err := verify(chunks[1], config.AUTH.JWT_SECRET)
 
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON("Unauthorized")
 		}
 
-		c.Locals("USER", user.ID)
+		for k, v := range user {
+			c.Locals(k, v)
+		}
+		// c.Locals("USER", user.UserID)
+		// c.Locals("TEAM", user.TeamID)
 
 		return c.Next()
 	}

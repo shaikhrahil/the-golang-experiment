@@ -40,7 +40,7 @@ func (h controller) add(c *fiber.Ctx) error {
 	if err := rest.ParseBodyAndValidate(c, &todo); err != nil {
 		return c.JSON(err)
 	}
-	todo.UserID = rest.GetUser(c)
+	todo.TeamUserID = rest.GetUser(c)
 	if err := h.todoService.db.Create(&todo).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Error{
@@ -81,7 +81,7 @@ func (h controller) update(c *fiber.Ctx) error {
 
 func (h controller) getAll(c *fiber.Ctx) error {
 	var todos []TodoSummary
-	if err := h.todoService.db.Model(&Todo{}).Find(&todos, &Todo{UserID: rest.GetUser(c)}).Error; err != nil {
+	if err := h.todoService.db.Model(&Todo{}).Find(&todos, &Todo{TeamUserID: rest.GetUser(c)}).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.JSON(fiber.ErrNotFound)
 	}

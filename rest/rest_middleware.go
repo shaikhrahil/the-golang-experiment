@@ -1,9 +1,17 @@
 package rest
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 // GetUser is helper function for getting authenticated user's id
 func GetUser(c *fiber.Ctx) uint {
-	id, _ := c.Locals("USER").(uint)
-	return id
+	id := c.Locals("UserID").(float64)
+	return uint(id)
+}
+
+// TokenPayload defines the payload for the token
+type TokenPayload struct {
+	UserID uint
+	TeamID uint
 }

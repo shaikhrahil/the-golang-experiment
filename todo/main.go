@@ -21,10 +21,15 @@ func main() {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
-	migrate(db)
 	if err != nil {
 		log.Fatalln("Unable to connect to DB")
 	}
+	sql, err := db.DB()
+	if err != nil {
+		log.Fatalln("Unable to access DB")
+	}
+	defer sql.Close()
+	migrate(db)
 	versioned := app.Group(fmt.Sprintf("/api/%s", config.APP.VERSION))
 	logger := log.Default()
 	logger.Println("Connected to DB")
@@ -33,7 +38,7 @@ func main() {
 
 	todo.New(&versioned, db, config, logger)
 
-	app.Listen(fmt.Sprintf(`:%s`, config.APP.PORT))
+	logger.Println(app.Listen(fmt.Sprintf(`:%s`, config.APP.PORT)))
 }
 
 func migrate(db *gorm.DB) {

@@ -12,3 +12,7 @@ type Model struct {
 	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
 }
+
+type MapModel struct {
+	ID uint `json:"id" gorm:"primaryKey"`
+}
