@@ -2,10 +2,10 @@ package user
 
 import (
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
-	todo "github.com/shaikhrahil/the-golang-experiment/todo/lib"
+	"github.com/shaikhrahil/the-golang-experiment/todo/lib/team_user"
 )
 
 type User struct {
 	accounts.User
-	Todos []todo.Todo `gorm:"foreignKey:UserID"`
+	TeamUserIDs []team_user.TeamUser `gorm:"foreignKey:UserID"`
 }
