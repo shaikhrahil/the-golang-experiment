@@ -22,6 +22,7 @@ type Configuration struct {
 	AUTH    AuthConf
 	ACCOUNT AccountConf
 	TODO    TodoConf
+	TEAM    TeamConf
 }
 
 type AppConf struct {
@@ -50,5 +51,9 @@ type AccountConf struct {
 }
 
 type TodoConf struct {
+	PREFIX string
+}
+
+type TeamConf struct {
 	PREFIX string
 }

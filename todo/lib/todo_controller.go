@@ -40,7 +40,18 @@ func (h controller) add(c *fiber.Ctx) error {
 	if err := rest.ParseBodyAndValidate(c, &todo); err != nil {
 		return c.JSON(err)
 	}
-	todo.TeamUserID = rest.GetUser(c)
+
+	var teamUser rest.MapModel
+	userID := rest.GetUser(c)
+	teamID := rest.GetTeam(c)
+	if err := h.todoService.db.Table("team_users").Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
+		h.logger.Println(err.Error())
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Error{
+			Code:    fiber.ErrBadRequest.Code,
+			Message: "Not found in team_users",
+		})
+	}
+
 	if err := h.todoService.db.Create(&todo).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Error{
