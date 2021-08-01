@@ -8,6 +8,7 @@ import (
 	"github.com/shaikhrahil/the-golang-experiment/rest"
 	todo "github.com/shaikhrahil/the-golang-experiment/todo/lib"
 	"github.com/shaikhrahil/the-golang-experiment/todo/lib/team"
+	"github.com/shaikhrahil/the-golang-experiment/todo/lib/team_user"
 	"github.com/shaikhrahil/the-golang-experiment/todo/lib/user"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,6 +22,7 @@ func main() {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
+	logger := log.Default()
 	if err != nil {
 		log.Fatalln("Unable to connect to DB")
 	}
@@ -29,20 +31,20 @@ func main() {
 		log.Fatalln("Unable to access DB")
 	}
 	defer sql.Close()
-	migrate(db)
-	versioned := app.Group(fmt.Sprintf("/api/%s", config.APP.VERSION))
-	logger := log.Default()
 	logger.Println("Connected to DB")
-
+	migrate(db)
 	logger.Println("DB migrated")
-
+	versioned := app.Group(fmt.Sprintf("/api/%s", config.APP.VERSION))
 	todo.New(&versioned, db, config, logger)
-
 	logger.Println(app.Listen(fmt.Sprintf(`:%s`, config.APP.PORT)))
 }
 
 func migrate(db *gorm.DB) {
-	if err := db.AutoMigrate(&user.User{}, &todo.Todo{}, &team.Team{}); err != nil {
+	if err := db.AutoMigrate(&user.User{}, &todo.Todo{}, &team.Team{}, &team_user.TeamUser{}); err != nil {
 		log.Fatalln("Unable to migrate DB")
+	}
+
+	if err := db.SetupJoinTable(&team.Team{}, "Users", &team_user.TeamUser{}); err != nil {
+		log.Fatalln(err.Error())
 	}
 }

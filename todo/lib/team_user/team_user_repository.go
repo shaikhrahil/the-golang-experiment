@@ -18,6 +18,6 @@ func NewRepository(db *gorm.DB, logger *log.Logger) Repository {
 	}
 }
 
-func (r *Repository) GetTeamsOfUser(teamUsers []TeamUser, userId uint) *gorm.DB {
-	return r.db.Where("user_id=?", userId).Find(&teamUsers)
+func (r *Repository) GetTeamsOfUser(teamUsers *[]TeamUser, userId uint) *gorm.DB {
+	return r.db.Where("user_id = ?", userId).Find(teamUsers)
 }

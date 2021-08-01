@@ -11,7 +11,7 @@ import (
 func NewClaims(teamUsersRepo team_user.Repository, logger *log.Logger) func(payload accounts.User) jwt.MapClaims {
 	return func(payload accounts.User) jwt.MapClaims {
 		var teamUsers []team_user.TeamUser
-		if err := teamUsersRepo.GetTeamsOfUser(teamUsers, payload.ID).Error; err != nil {
+		if err := teamUsersRepo.GetTeamsOfUser(&teamUsers, payload.ID).Error; err != nil {
 			logger.Fatalln(err.Error())
 		}
 		var teams []uint

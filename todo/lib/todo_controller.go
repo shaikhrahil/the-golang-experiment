@@ -7,6 +7,7 @@ import (
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
 	auth "github.com/shaikhrahil/the-golang-experiment/auth/lib"
 	"github.com/shaikhrahil/the-golang-experiment/rest"
+	"github.com/shaikhrahil/the-golang-experiment/todo/lib/team_user"
 	"gorm.io/gorm"
 )
 
@@ -44,7 +45,8 @@ func (h controller) add(c *fiber.Ctx) error {
 	var teamUser rest.MapModel
 	userID := rest.GetUser(c)
 	teamID := rest.GetTeam(c)
-	if err := h.todoService.db.Table("team_users").Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
+	// if err := h.todoService.db.Table("team_users").Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
+	if err := h.todoService.db.Model(&team_user.TeamUser{}).Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Error{
 			Code:    fiber.ErrBadRequest.Code,
