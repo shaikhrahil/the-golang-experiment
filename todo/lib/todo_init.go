@@ -24,6 +24,7 @@ func New(r *fiber.Router, db *gorm.DB, config rest.Configuration, logger *log.Lo
 	auth.NewController(r, config, logger, authRepo, accountsRepo)
 	(*r).Use(auth.GetMiddleware(config))
 	team.NewController(r, config, logger, teamsRepo)
+	team_user.NewController(r, config, logger, teamUsersRepo)
 	accounts.NewController(r, config, logger, accountsRepo)
 	NewController(r, config, logger, authRepo, accountsRepo, todoRepo)
 }

@@ -2,7 +2,6 @@ package team
 
 import (
 	"log"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	accounts "github.com/shaikhrahil/the-golang-experiment/accounts/lib"
@@ -29,7 +28,6 @@ func NewController(r *fiber.Router, conf rest.Configuration, logger *log.Logger,
 	teamRoutes.Post("/", h.addTeam)
 	teamRoutes.Get("/:id", h.getTeam)
 	teamRoutes.Patch("/:id", h.updateTeam)
-	teamRoutes.Post("/:id/users", h.addMembers)
 	teamRoutes.Delete("/:id", h.deleteTeam)
 }
 
@@ -129,18 +127,4 @@ func (h controller) updateTeam(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(teamId)
-}
-
-func (h controller) addMembers(c *fiber.Ctx) error {
-	// teamId := c.Params("id")
-	users := strings.Split(string(c.Request().Body()), ",")
-	var updatedTeam Team
-	var dbUsers []user.User
-
-	if err := h.teamService.db.Model(&updatedTeam).Association("Users").Find(&dbUsers, users); err != nil {
-		h.logger.Println(err.Error())
-		return c.JSON(err.Error())
-	}
-
-	return c.JSON(updatedTeam)
 }
