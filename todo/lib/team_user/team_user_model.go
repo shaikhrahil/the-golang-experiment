@@ -8,8 +8,8 @@ import (
 
 type TeamUser struct {
 	rest.Model
-	TeamID uint      `json:"teamID" gorm:"unique"`
+	TeamID uint      `json:"teamID"`
 	Team   team.Team `json:"-"`
-	UserID uint      `json:"userID" gorm:"unique"`
+	UserID uint      `json:"userID"`
 	User   user.User `json:"-"`
 }

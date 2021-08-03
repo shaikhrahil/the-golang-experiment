@@ -44,7 +44,7 @@ func (h controller) add(c *fiber.Ctx) error {
 
 	var teamUser rest.MapModel
 	userID := rest.GetUser(c)
-	teamID := rest.GetTeam(c)
+	teamID := rest.GetTeams(c)
 	// if err := h.todoService.db.Table("team_users").Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
 	if err := h.todoService.db.Model(&team_user.TeamUser{}).Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
 		h.logger.Println(err.Error())

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	mapset "github.com/deckarep/golang-set"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,12 +12,13 @@ func GetUser(c *fiber.Ctx) uint {
 }
 
 // GetUser is helper function for getting authenticated user's id
-func GetTeam(c *fiber.Ctx) []uint {
-	var teams []uint
+func GetTeams(c *fiber.Ctx) mapset.Set {
+	var teams mapset.Set
 	t := c.Locals("Teams").([]interface{})
 	for _, v := range t {
-		floatT := v.(float64)
-		teams = append(teams, uint(floatT))
+		// floatT :=
+		// teams = append(teams, uint(floatT))
+		teams.Add(v.(uint))
 	}
 	return teams
 }

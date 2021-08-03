@@ -3,6 +3,7 @@ module github.com/shaikhrahil/the-golang-experiment
 go 1.16
 
 require (
+	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
