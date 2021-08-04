@@ -114,9 +114,12 @@ func (h controller) getCommonTeams(c *fiber.Ctx) error {
 	}
 	userID := rest.GetUser(c)
 
+	// inArgs := []uint{userID, uint(friendID)}
+
 	var commonTeams []team.Team
 
-	if err := h.teamService.db.Joins("inner join (team_users T1 inner join team_users T2 on T2.user_id = ? and T2.team_id = ?) on T1.user_id = ? and T1.team_id = ?", friendID, userID).Find(&commonTeams).Error; err != nil {
+	if err := h.teamService.db.Where("id in (select T1.team_id from (team_users T1 inner join team_users T2 on T2.user_id = ?) where T1.user_id = ? and T1.team_id = T2.team_id)", friendID, userID).Find(&commonTeams).Error; err != nil {
+		// if err := h.teamService.db.Where("id in (SELECT team_id FROM team_users WHERE user_id in ? GROUP BY team_id HAVING COUNT(team_id)>1)", inArgs).Find(&commonTeams).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.JSON(gorm.ErrRecordNotFound.Error())
 	}
