@@ -31,5 +31,5 @@ func main() {
 
 	accounts.New(&versioned, db, config, logger)
 
-	app.Listen(fmt.Sprintf(`:%s`, config.APP.PORT))
+	logger.Fatalln(app.Listen(fmt.Sprintf(`:%s`, config.APP.PORT)))
 }
