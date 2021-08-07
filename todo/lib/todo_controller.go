@@ -45,7 +45,6 @@ func (h controller) add(c *fiber.Ctx) error {
 	var teamUser rest.MapModel
 	userID := rest.GetUser(c)
 	teamID := rest.GetTeams(c)
-	// if err := h.todoService.db.Table("team_users").Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
 	if err := h.todoService.db.Model(&team_user.TeamUser{}).Where("team_id = ? and user_id = ?", teamID, userID).First(&teamUser).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Error{
@@ -75,7 +74,6 @@ func (h controller) update(c *fiber.Ctx) error {
 	errors := rest.ValidateStructPartially(todo)
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
-
 	}
 	todoId := c.Params("id")
 	if res := h.todoService.db.Where("id = ?", todoId).Updates(todo); res.Error != nil {
@@ -104,7 +102,7 @@ func (h controller) getAll(c *fiber.Ctx) error {
 func (h controller) get(c *fiber.Ctx) error {
 	var todo Todo
 	todoID := c.Params("id")
-	if err := h.todoService.db.Where("id = ?", todoID).First(&todo).Error; err != nil {
+	if err := h.todoService.db.First(&todo, todoID).Error; err != nil {
 		h.logger.Println(err.Error())
 		return c.JSON(fiber.ErrNotFound)
 	}
